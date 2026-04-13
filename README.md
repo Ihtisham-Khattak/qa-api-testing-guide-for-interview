@@ -55,3 +55,32 @@ Both are critical for API reliability, but they solve completely different probl
 > *"Contract testing validates that the producer and consumer agree on the API structure—fields, types, and formats. Integration testing verifies that multiple services or systems actually work together end-to-end, handling real data flows and state changes. One catches breaking changes early; the other catches workflow failures in complex architectures."*
 
 🛠️ **Pro Tip:** Run contract tests as a fast CI gate before integration tests. This prevents wasted debugging time when integration failures are just caused by silent schema mismatches.
+
+---
+## 3. How do you test authentication and authorization flows
+Security testing isn't optional. You must verify both *who* the user is (AuthN) and *what* they're allowed to do (AuthZ).
+
+### 🧪 Test Strategy: Login → Access Protected Resource
+**Step 1: Authentication (AuthN) – `POST /login`**
+| Scenario | Expected Response |
+|----------|-------------------|
+| Valid credentials | `200 OK` + JWT/Access Token + (optional) Refresh Token |
+| Invalid credentials | `401 Unauthorized` + generic error (no user enumeration) |
+
+**Step 2: Authorization (AuthZ) – `GET /orders`**
+| Scenario | Expected Response |
+|----------|-------------------|
+| Valid token attached | `200 OK` + user-specific data |
+| Missing/Expired token | `401 Unauthorized` |
+| Valid token, wrong role (e.g., user → admin endpoint) | `403 Forbidden` |
+
+### 🔍 Additional Security & Edge-Case Checks
+- ⏳ **Token Lifecycle:** Expiry validation, refresh token rotation, logout invalidation
+- 🛡️ **Token Tampering:** Modify JWT payload or signature → expect `401/403`
+- 🔄 **State Changes:** Token reuse after password reset, concurrent session limits
+- 📜 **Headers & Security:** `Authorization: Bearer <token>`, proper `WWW-Authenticate` on failure, secure cookie flags (if applicable)
+
+### 💡 Interview Answer
+> *"I test authentication by validating login flows, token issuance, and proper error handling for invalid credentials. For authorization, I verify role-based access control, test missing/expired/tampered tokens, and ensure endpoints return 401 for unauthenticated requests and 403 for insufficient permissions—covering the full token lifecycle and security edge cases."*
+
+🛠️ **Pro Tip:** Never hardcode tokens in test suites. Use setup hooks to dynamically fetch, inject, and refresh tokens via your framework (e.g., `cy.request()` in Cypress, `pre-request scripts` in Postman, or `@pytest.fixture` in Python). This keeps tests resilient across environments.
