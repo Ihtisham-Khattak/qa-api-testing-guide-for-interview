@@ -36,3 +36,22 @@ A `200 OK` or `404 Not Found` is just the starting point. Real validation covers
 > *"I don’t stop at the status code. I validate the response body for data correctness and schema compliance, verify business rules are enforced, check headers for security and content type, and measure response time against SLAs. This ensures the API is not just reachable, but reliable and consumer-ready."*
 
 🛠️ **Pro Tip:** Automate schema & type validation using tools like `ajv`, `zod`, Postman's `pm.response.to.have.jsonSchema()`, or Cypress `cy.request().its('body').should('match', schema)`.
+
+---
+
+## 2. Difference between contract testing and integration testing
+Both are critical for API reliability, but they solve completely different problems. Interviewers often test your ability to distinguish them.
+
+### 📊 Comparison at a Glance
+| Aspect | Contract Testing | Integration Testing |
+|--------|------------------|---------------------|
+| **Goal** | Validate API structure & data agreements between producer & consumer | Verify end-to-end workflows across multiple services/systems |
+| **Focus** | Request/response schema, field names, data types, required vs optional | System interaction, data flow, state changes, third-party dependencies |
+| **Example Failure** | Backend changes `price` from `number` → `string` (`"150000"`) → ❌ Contract breaks | Order API → Payment Service → Inventory DB → Payment succeeds but stock isn’t updated → ❌ Workflow breaks |
+| **When to Run** | Early in CI, per service, fast & isolated | After contract tests, in staging/test environments, slightly slower |
+| **Common Tools** | Pact, OpenAPI/Swagger validators, Spring Cloud Contract, Specmatic | Cypress, Postman/Newman, RestAssured, Testcontainers, k6 |
+
+### 💡 Interview Answer
+> *"Contract testing validates that the producer and consumer agree on the API structure—fields, types, and formats. Integration testing verifies that multiple services or systems actually work together end-to-end, handling real data flows and state changes. One catches breaking changes early; the other catches workflow failures in complex architectures."*
+
+🛠️ **Pro Tip:** Run contract tests as a fast CI gate before integration tests. This prevents wasted debugging time when integration failures are just caused by silent schema mismatches.
